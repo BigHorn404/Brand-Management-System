@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace 是mapper文件的唯一标识，必须是全限定名-->
+<mapper namespace="com.bighorn.mapper.BrandMapper">
+
+    <!-- resultMap可以匹配数据库字段与实体类的属性-->
+    <resultMap id="BrandResultMap" type="com.bighorn.pojo.Brand">
+        <result column="brand_name" property="brandName"></result>
+        <result column="company_name" property="companyName"></result>
+    </resultMap>
+
+    <!--    添加数据-->
+    <insert id="add">
+        insert into tb_brand
+        values (null, #{brandName}, #{companyName}, #{ordered},
+                #{description}, #{status});
+    </insert>
+
+    <!--    修改品牌数据-->
+    <update id="update">
+        update tb_brand
+        <set>
+            <if test="brandName != null and brandName != '' ">
+                brand_name=#{brandName},
+            </if>
+            <if test="companyName != null and companyName != '' ">
+                company_name=#{companyName},
+            </if>
+            <if test="ordered != null and ordered != '' ">
+                ordered=#{ordered},
+            </if>
+            <if test="description != null and description != '' ">
+                description=#{description},
+            </if>
+            <if test="status != null and status != '' ">
+                status=#{status},
+            </if>
+        </set>
+        where id=#{id};
+    </update>
+
+    <!--    根据id删除数据-->
+    <delete id="delete">
+        delete
+        from tb_brand
+        where id = #{id};
+    </delete>
+
+    <!--    根据传入的id数组批量删除-->
+    <delete id="deleteByIds">
+        delete
+        from tb_brand
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--    查询所有-->
+    <select id="selectAll" resultMap="BrandResultMap">
+        select *
+        from tb_brand;
+    </select>
+
+    <!--    根据id查询数据-->
+    <select id="selectById" resultMap="BrandResultMap">
+        select *
+        from tb_brand
+        where id = #{id};
+    </select>
+
+    <!--    分页查询-->
+    <select id="selectByPage" resultMap="BrandResultMap">
+        select *
+        from tb_brand limit #{begin} , #{size};
+    </select>
+    <!--查询总记录数-->
+    <select id="selectTotalCount" resultType="int">
+        select count(*)
+        from tb_brand;
+    </select>
+
+    <!--查询满足条件的数据并进行分页-->
+    <select id="selectByPageAndCondition" resultMap="BrandResultMap">
+        select *
+        from tb_brand
+        <where>
+            <if test="brand.brandName != null and brand.brandName != '' ">
+                <bind name="brandName" value="'%'+brand.brandName+'%'"/>
+                and brand_name like #{brandName}
+            </if>
+
+            <if test="brand.companyName != null and brand.companyName != '' ">
+                <bind name="companyName" value="'%'+brand.companyName+'%'"/>
+                and company_name like #{companyName}
+            </if>
+
+            <if test="brand.status != null">
+                and status = #{brand.status}
+            </if>
+        </where>
+        limit #{begin} , #{size};
+    </select>
+    <!--查询满足条件的数据条目数-->
+    <select id="selectTotalCountByCondition" resultType="int">
+        select count(*) from tb_brand
+        <where>
+            <if test="brandName != null and brandName != '' ">
+                and brand_name like CONCAT('%',#{brandName},'%')
+            </if>
+
+            <if test="companyName != null and companyName != '' ">
+                and company_name like CONCAT('%',#{companyName},'%')
+            </if>
+
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+
+
+</mapper>
